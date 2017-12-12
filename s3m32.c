@@ -1,18 +1,20 @@
+#define S32MINC 1
+#ifdef S32MINC
 #include <stdbool.h>
 #include <stdint.h>
 #include "stdlib.h"
 #include <string.h>
-#include "inc/hw_types.h"
-#include "driverlib/rom.h" //only needed for debug
-#include "driverlib/gpio.h"
-#include "utils/uartstdio.h"
+//#include "inc/hw_types.h"
+//#include "driverlib/rom.h" //only needed for debug
+//#include "driverlib/gpio.h"
+//#include "utils/uartstdio.h"
 
 #include "global.h"
 #include "s3m32.h"
 
-#include ".\fatfs\ff.h"
+//#include "ff.h"
 
-#include "debughlpr.h"
+//#include "debughlpr.h"
 
 #define min(X,Y) ((X) < (Y) ? (X) : (Y))
 
@@ -61,6 +63,7 @@ static void loadHeader() {
  uint8_t temp8;
 
  f_read(&file, uMod.S3m.name, 28, &count);
+ //strcpy(currentsongname, uMod.S3m.name);
  f_lseek(&file, 0x20);
 
  f_read(&file, &songLength, 2, &count);
@@ -215,36 +218,36 @@ static void loadPattern(uint8_t pattern) {
  while(row < ROWS) {
   f_read(&file, &temp8, 1, &count);
   if(temp8) {
-	  channel = uMod.S3m.channelRemapping[temp8 & 31];
-	  if(channel==0XFF) //no channel
-	  {
-		  	 //R.K.
-	  }
-	  else
-	  {
-		  if(temp8 & 32) {
-			  f_read(&file, &temp16, 1, &count);
-			  switch(temp16) {
-			  case 255:
-				  uPlayer.S3m_player.currentPattern.note[row][channel] = NONOTE;
-				  break;
-			  case 254:
-				  uPlayer.S3m_player.currentPattern.note[row][channel] = KEYOFF;
-				  break;
-			  default:
-				  uPlayer.S3m_player.currentPattern.note[row][channel] = (temp16 >> 4) * 12 + (temp16 & 0xF);
-			  }
-			  f_read(&file, &uPlayer.S3m_player.currentPattern.instrumentNumber[row][channel], 1, &count);
-		  }
+      channel = uMod.S3m.channelRemapping[temp8 & 31];
+      if(channel==0XFF) //no channel
+      {
+             //R.K.
+      }
+      else
+      {
+          if(temp8 & 32) {
+              f_read(&file, &temp16, 1, &count);
+              switch(temp16) {
+              case 255:
+                  uPlayer.S3m_player.currentPattern.note[row][channel] = NONOTE;
+                  break;
+              case 254:
+                  uPlayer.S3m_player.currentPattern.note[row][channel] = KEYOFF;
+                  break;
+              default:
+                  uPlayer.S3m_player.currentPattern.note[row][channel] = (temp16 >> 4) * 12 + (temp16 & 0xF);
+              }
+              f_read(&file, &uPlayer.S3m_player.currentPattern.instrumentNumber[row][channel], 1, &count);
+          }
 
-		  if(temp8 & 64)
-			  f_read(&file, &uPlayer.S3m_player.currentPattern.volume[row][channel], 1, &count);
+          if(temp8 & 64)
+              f_read(&file, &uPlayer.S3m_player.currentPattern.volume[row][channel], 1, &count);
 
-		  if(temp8 & 128) {
-			  f_read(&file, &uPlayer.S3m_player.currentPattern.effectNumber[row][channel], 1, &count);
-			  f_read(&file, &uPlayer.S3m_player.currentPattern.effectParameter[row][channel], 1, &count);
-		  }
-	  }
+          if(temp8 & 128) {
+              f_read(&file, &uPlayer.S3m_player.currentPattern.effectNumber[row][channel], 1, &count);
+              f_read(&file, &uPlayer.S3m_player.currentPattern.effectParameter[row][channel], 1, &count);
+          }
+      }
   } else
    row++;
  }
@@ -398,7 +401,7 @@ static void processRow() {
    uPlayer.S3m_player.lastInstrumentNumber[channel] = instrumentNumber - 1;
    if(!(effectParameter == 0x13 && effectParameterX == NOTEDELAY))
    {
-	   uPlayer.S3m_player.volume[channel] = uMod.S3m.instruments[uPlayer.S3m_player.lastInstrumentNumber[channel]].volume;
+       uPlayer.S3m_player.volume[channel] = uMod.S3m.instruments[uPlayer.S3m_player.lastInstrumentNumber[channel]].volume;
    }
   }
 
@@ -427,10 +430,10 @@ static void processRow() {
     break;
 
    case JUMPTOORDER:
-	 //  GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3,GPIO_PIN_1);
+     //  GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3,GPIO_PIN_1);
     uPlayer.S3m_player.orderIndex = effectParameter;
     if(uPlayer.S3m_player.orderIndex >= uMod.S3m.songLength){
-    	UARTprintf("Possible End 1?\n");
+       // UARTprintf("Possible End 1?\n");
      uPlayer.S3m_player.orderIndex = 0;
 
     }
@@ -439,18 +442,18 @@ static void processRow() {
     break;
 
    case BREAKPATTERNTOROW:
-	   //GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_2);
-	uPlayer.S3m_player.row = effectParameterX * 10 + effectParameterY;
+       //GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_2);
+    uPlayer.S3m_player.row = effectParameterX * 10 + effectParameterY;
     if(uPlayer.S3m_player.row >= ROWS)
      uPlayer.S3m_player.row = 0;
     if(!jumpFlag && !breakFlag) {
      uPlayer.S3m_player.orderIndex++;
-     UARTprintf("\033[2J");
-        UARTprintf("\033[0;0H");
-        UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
-        UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.S3m_player.orderIndex, uMod.S3m.songLength);
+     //UARTprintf("\033[2J");
+     //   UARTprintf("\033[0;0H");
+     //   UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
+     //   UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.S3m_player.orderIndex, uMod.S3m.songLength);
      if(uPlayer.S3m_player.orderIndex >= uMod.S3m.songLength){
-    	 UARTprintf("Possible End 2?\n");
+      //   UARTprintf("Possible End 2?\n");
       uPlayer.S3m_player.orderIndex = 0;
      }
     }
@@ -784,17 +787,17 @@ void s3m_player() {
 
   if(uPlayer.S3m_player.row == ROWS) {
    uPlayer.S3m_player.orderIndex++;
-   UARTprintf("\033[2J");
-           UARTprintf("\033[0;0H");
-           UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
-           UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.S3m_player.orderIndex, uMod.S3m.songLength);
+   //UARTprintf("\033[2J");
+   //        UARTprintf("\033[0;0H");
+   //        UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
+    //       UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.S3m_player.orderIndex, uMod.S3m.songLength);
    //ROM_IntMasterDisable();
    //UARTprintf("Mod orderIndex: %d\n",uPlayer.S3m_player.orderIndex);
    //ROM_IntMasterEnable();
 
    if(uPlayer.S3m_player.orderIndex == uMod.S3m.songLength){
-	   UARTprintf("Possible End 3?\n");
-	   loadNextFile();
+       //UARTprintf("Possible End 3?\n");
+       //loadNextFile();
     uPlayer.S3m_player.orderIndex = 0;
    }
    uPlayer.S3m_player.row = 0;
@@ -914,7 +917,7 @@ void loadS3m() {
  loadHeader();
  loadSamples();
 
- UARTprintf("Song name: [%s] channels - [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
+// UARTprintf("Song name: [%s] channels - [%d]\n",uMod.S3m.name,uMod.S3m.numberOfChannels);
 
  uPlayer.S3m_player.amiga = AMIGA;
  uPlayer.S3m_player.tick = uPlayer.S3m_player.speed;
@@ -957,6 +960,6 @@ void loadS3m() {
 
 uint16_t s3m_getSamplesPerTick()
 {
-	return uPlayer.S3m_player.samplesPerTick;
+    return uPlayer.S3m_player.samplesPerTick;
 }
-
+#endif

@@ -2,7 +2,7 @@
 #define __S3M32_H__
 
 #include <stdint.h>
-
+//TODO: Change Macros so that they are not redefined (add prefix?)
 // Effects
 #define SETSPEED                 0x1  // Axx
 #define JUMPTOORDER              0x2  // Bxx
@@ -38,9 +38,11 @@
 #define FUNKREPEAT               0xF
 
 //Prototypes
-void s3m_player();
-void s3m_mixer();
-void loadS3m();
-uint16_t s3m_getSamplesPerTick();
+void s3m_player(void);
+void s3m_mixer(void);
+void loadS3m(void);
+uint16_t s3m_getSamplesPerTick(void);
+extern void loadNextFile(void);
+extern void loadPreviousFile(void);
 
 #endif

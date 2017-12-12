@@ -36,9 +36,11 @@
 #define INVERTLOOP            0xF
 
 //Prototypes
-void mod_player();
-void mod_mixer();
-void loadMod();
-uint16_t mod_getSamplesPerTick();
+void mod_player(void);
+void mod_mixer(void);
+void loadMod(void);
+uint16_t mod_getSamplesPerTick(void);
+extern void loadNextFile(void);
+extern void loadPreviousFile(void);
 
 #endif

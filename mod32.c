@@ -1,14 +1,17 @@
+
+#define MOD32INC 1
+#ifdef MOD32INC
 #include <stdbool.h>
 #include <stdint.h>
 #include "stdlib.h"
 #include <string.h>
-#include "inc/hw_types.h"
-#include "utils/uartstdio.h"
+//#include "inc/hw_types.h"
+//#include "utils/uartstdio.h"
 
 #include "global.h"
 #include "mod32.h"
 
-#include ".\fatfs\ff.h"
+//#include "ff.h"
 
 #define min(X,Y) ((X) < (Y) ? (X) : (Y))
 
@@ -73,11 +76,12 @@ static uint16_t word(uint8_t h, uint8_t l) {
 static void loadHeader() {
  uint32_t count;
  uint8_t i;
- uint8_t temp[4];
+ char temp[4];
  numsteps = 0;
  f_read(&file, uMod.Mod.name, 20, &count);
  if(strcmp(uMod.Mod.name, "")==0){
-	 strcpy(uMod.Mod.name,fileInfo.fname);
+     strcpy(uMod.Mod.name,fileInfo.fname);
+     //strcpy(currentsongname, uMod.Mod.name);
  }
  for(i = 0; i < SAMPLES; i++) {
   f_read(&file, uMod.Mod.samples[i].name, 22, &count);
@@ -173,14 +177,14 @@ static void loadPattern(uint8_t pattern) {
 
 static void portamento(uint8_t channel) {
  if(uPlayer.Mod_player.lastAmigaPeriod[channel] < uPlayer.Mod_player.portamentoNote[channel]) {
-	 uPlayer.Mod_player.lastAmigaPeriod[channel] += uPlayer.Mod_player.portamentoSpeed[channel];
+     uPlayer.Mod_player.lastAmigaPeriod[channel] += uPlayer.Mod_player.portamentoSpeed[channel];
   if(uPlayer.Mod_player.lastAmigaPeriod[channel] > uPlayer.Mod_player.portamentoNote[channel])
-	  uPlayer.Mod_player.lastAmigaPeriod[channel] = uPlayer.Mod_player.portamentoNote[channel];
+      uPlayer.Mod_player.lastAmigaPeriod[channel] = uPlayer.Mod_player.portamentoNote[channel];
  }
  if(uPlayer.Mod_player.lastAmigaPeriod[channel] > uPlayer.Mod_player.portamentoNote[channel]) {
-	 uPlayer.Mod_player.lastAmigaPeriod[channel] -= uPlayer.Mod_player.portamentoSpeed[channel];
+     uPlayer.Mod_player.lastAmigaPeriod[channel] -= uPlayer.Mod_player.portamentoSpeed[channel];
   if(uPlayer.Mod_player.lastAmigaPeriod[channel] < uPlayer.Mod_player.portamentoNote[channel])
-	  uPlayer.Mod_player.lastAmigaPeriod[channel] = uPlayer.Mod_player.portamentoNote[channel];
+      uPlayer.Mod_player.lastAmigaPeriod[channel] = uPlayer.Mod_player.portamentoNote[channel];
  }
  Mixer.channelFrequency[channel] = uPlayer.Mod_player.amiga / uPlayer.Mod_player.lastAmigaPeriod[channel];
 }
@@ -337,7 +341,7 @@ static void processRow() {
    case JUMPTOORDER:
     uPlayer.Mod_player.orderIndex = effectParameter;
     if(uPlayer.Mod_player.orderIndex >= uMod.Mod.songLength){
-    	UARTprintf("Possible End 1?\n");
+        //UARTprintf("Possible End 1?\n");
      uPlayer.Mod_player.orderIndex = 0;
     }
     uPlayer.Mod_player.row = 0;
@@ -356,17 +360,17 @@ static void processRow() {
     if(!jumpFlag && !breakFlag) {
      uPlayer.Mod_player.orderIndex++;
      numsteps++;
-     	UARTprintf("\033[2J");
-        UARTprintf("\033[0;0H");
-        UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
-        UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.Mod_player.orderIndex, uMod.Mod.songLength);
+        //UARTprintf("\033[2J");
+        //UARTprintf("\033[0;0H");
+        //UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
+        //UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.Mod_player.orderIndex, uMod.Mod.songLength);
      if(numsteps > uMod.Mod.songLength){
-    	 numsteps = 0;
-    	 UARTprintf("Let's end early.\n");
-    	 loadNextFile();
+         numsteps = 0;
+         //UARTprintf("Let's end early.\n");
+         loadNextFile();
      }
      if(uPlayer.Mod_player.orderIndex >= uMod.Mod.songLength){
-    	 UARTprintf("Possible End 2?\n");
+         //UARTprintf("Possible End 2?\n");
       uPlayer.Mod_player.orderIndex = 0;
      }
     }
@@ -584,18 +588,18 @@ void mod_player() {
   if(uPlayer.Mod_player.row == ROWS) {
    uPlayer.Mod_player.orderIndex++;
    numsteps++;
-   UARTprintf("\033[2J");
-   UARTprintf("\033[0;0H");
-   UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
-   UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.Mod_player.orderIndex, uMod.Mod.songLength);
+   //UARTprintf("\033[2J");
+   //UARTprintf("\033[0;0H");
+   //UARTprintf("Current Song: [%s] - Number of Channels [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
+   //UARTprintf("Current Position: [%d] of [%d]\n",uPlayer.Mod_player.orderIndex, uMod.Mod.songLength);
    if(numsteps > uMod.Mod.songLength){
-	   numsteps = 0;
-	   UARTprintf("Let's end early.\n");
-	   loadNextFile();
+       numsteps = 0;
+       //UARTprintf("Let's end early.\n");
+       loadNextFile();
    }
    if(uPlayer.Mod_player.orderIndex == uMod.Mod.songLength){
-	   UARTprintf("Possible End 3?\n");
-	   loadNextFile();
+       //UARTprintf("Possible End 3?\n");
+       loadNextFile();
     uPlayer.Mod_player.orderIndex = 0;
    }
    uPlayer.Mod_player.row = 0;
@@ -711,18 +715,18 @@ void loadMod() {
  loadHeader();
  //We want to ignore files with too many channels
  if(uMod.Mod.numberOfChannels > CHANNELS){
-	 UARTprintf("Too many Channels: [%d]\n",uMod.Mod.numberOfChannels);
-	 if(nextprevfile == 0){
-		 loadNextFile();
-	 }
-	 else{
-		 loadPreviousFile();
-	 }
-	 return;
+     //UARTprintf("Too many Channels: [%d]\n",uMod.Mod.numberOfChannels);
+     if(nextprevfile == 0){
+         loadNextFile();
+     }
+     else{
+         loadPreviousFile();
+     }
+     return;
  }
  loadSamples();
- UARTprintf("Song name: [%s] channels - [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
- UARTprintf("Length: [%d]\n",uMod.Mod.songLength);
+ //UARTprintf("Song name: [%s] channels - [%d]\n",uMod.Mod.name,uMod.Mod.numberOfChannels);
+ //UARTprintf("Length: [%d]\n",uMod.Mod.songLength);
  uPlayer.Mod_player.amiga = AMIGA_MOD;
  uPlayer.Mod_player.samplesPerTick = SAMPLERATE / (2 * 125 / 5); // Hz = 2 * BPM / 5
  uPlayer.Mod_player.speed = 6;
@@ -770,5 +774,6 @@ void loadMod() {
 }
 
 uint16_t mod_getSamplesPerTick(){
-	return uPlayer.Mod_player.samplesPerTick;
+    return uPlayer.Mod_player.samplesPerTick;
 }
+#endif
